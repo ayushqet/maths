@@ -1,0 +1,144 @@
+{\rtf1\fbidis\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil Segoe UI;}}
+{\colortbl ;\red0\green0\blue0;}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\tx720\cf1\f0\fs38 document.addEventListener("DOMContentLoaded", () => \{\par
+  const startScreen = document.getElementById("start-screen");\par
+  const levelScreen = document.getElementById("level-screen");\par
+  const quizScreen = document.getElementById("quiz-screen");\par
+  const congratulationsScreen = document.getElementById("congratulations-screen");\par
+  const startBtn = document.getElementById("start-btn");\par
+  const levelsContainer = document.getElementById("levels");\par
+  const timerDisplay = document.getElementById("timer");\par
+  const questionDisplay = document.getElementById("question");\par
+  const optionsContainer = document.getElementById("options");\par
+\par
+  const TOTAL_LEVELS = 100;\par
+  let currentLevel = 1;\par
+  let timer;\par
+\par
+  // Generate Levels\par
+  function generateLevels() \{\par
+    for (let i = 1; i <= TOTAL_LEVELS; i++) \{\par
+      const level = document.createElement("div");\par
+      level.classList.add("level");\par
+      level.textContent = i;\par
+      if (i > 1) level.classList.add("locked");\par
+      level.addEventListener("click", () => selectLevel(i));\par
+      levelsContainer.appendChild(level);\par
+    \}\par
+  \}\par
+\par
+  // Start Game\par
+  startBtn.addEventListener("click", () => \{\par
+    startScreen.classList.add("hidden");\par
+    levelScreen.classList.remove("hidden");\par
+  \});\par
+\par
+  // Select a Level\par
+  function selectLevel(level) \{\par
+    if (level > currentLevel) return;\par
+\par
+    levelScreen.classList.add("hidden");\par
+    quizScreen.classList.remove("hidden");\par
+    startQuiz(level);\par
+  \}\par
+\par
+  // Start Quiz\par
+  function startQuiz(level) \{\par
+    const difficulty = Math.pow(level, 2); // Rapid increase in difficulty\par
+    const timeLimit = Math.max(15 - Math.floor(level / 10), 3); // Faster levels mean less time\par
+    timerDisplay.textContent = `Time: $\{timeLimit\}s`;\par
+\par
+    const question = generateQuestion(difficulty);\par
+    displayQuestion(question);\par
+\par
+    let timeLeft = timeLimit;\par
+    timer = setInterval(() => \{\par
+      timeLeft--;\par
+      timerDisplay.textContent = `Time: $\{timeLeft\}s`;\par
+      if (timeLeft <= 0) \{\par
+        clearInterval(timer);\par
+        alert("Time's up! Try again.");\par
+        resetToLevels();\par
+      \}\par
+    \}, 1000);\par
+  \}\par
+\par
+  // Generate a Random Math Question\par
+  function generateQuestion(difficulty) \{\par
+    const num1 = Math.floor(Math.random() * difficulty);\par
+    const num2 = Math.floor(Math.random() * difficulty);\par
+    const operatorIndex = Math.floor(Math.random() * 3); // 0 = +, 1 = -, 2 = *\par
+    const operators = ["+", "-", "*"];\par
+    const operator = operators[operatorIndex];\par
+\par
+    let correctAnswer;\par
+    if (operator === "+") correctAnswer = num1 + num2;\par
+    else if (operator === "-") correctAnswer = num1 - num2;\par
+    else correctAnswer = num1 * num2;\par
+\par
+    const options = [correctAnswer];\par
+    while (options.length < 4) \{\par
+      const option = correctAnswer + Math.floor(Math.random() * 20) - 10; // Randomize near answer\par
+      if (!options.includes(option)) options.push(option);\par
+    \}\par
+\par
+    return \{\par
+      question: `$\{num1\} $\{operator\} $\{num2\} = ?`,\par
+      options: options.sort(() => Math.random() - 0.5),\par
+      correctAnswer,\par
+    \};\par
+  \}\par
+\par
+  // Display Question and Options\par
+  function displayQuestion(\{ question, options, correctAnswer \}) \{\par
+    questionDisplay.textContent = question;\par
+    optionsContainer.innerHTML = "";\par
+    options.forEach((option) => \{\par
+      const btn = document.createElement("button");\par
+      btn.textContent = option;\par
+      btn.addEventListener("click", () => checkAnswer(option, correctAnswer));\par
+      optionsContainer.appendChild(btn);\par
+    \});\par
+  \}\par
+\par
+  // Check Answer\par
+  function checkAnswer(selected, correct) \{\par
+    clearInterval(timer);\par
+    if (selected === correct) \{\par
+      alert("Correct!");\par
+      if (currentLevel < TOTAL_LEVELS) \{\par
+        currentLevel++;\par
+        unlockLevel(currentLevel);\par
+        resetToLevels();\par
+      \} else \{\par
+        finishGame();\par
+      \}\par
+    \} else \{\par
+      alert("Wrong answer! Try again.");\par
+      resetToLevels();\par
+    \}\par
+  \}\par
+\par
+  // Unlock Next Level\par
+  function unlockLevel(level) \{\par
+    const levels = document.querySelectorAll(".level");\par
+    levels[level - 1].classList.remove("locked");\par
+  \}\par
+\par
+  // Reset to Level Screen\par
+  function resetToLevels() \{\par
+    quizScreen.classList.add("hidden");\par
+    levelScreen.classList.remove("hidden");\par
+  \}\par
+\par
+  // Finish Game\par
+  function finishGame() \{\par
+    quizScreen.classList.add("hidden");\par
+    congratulationsScreen.classList.remove("hidden");\par
+  \}\par
+\par
+  // Initialize\par
+  generateLevels();\par
+\});\par
+}
