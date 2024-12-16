@@ -1,2 +1,1 @@
-# maths
-hi first game
+
